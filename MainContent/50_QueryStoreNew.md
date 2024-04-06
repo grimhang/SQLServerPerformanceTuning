@@ -141,22 +141,23 @@ comments: true
     
     ```sql
     DECLARE @CompareTime DATETIME = '2021-11-28 15:55';
-    SELECT 
-        CAST(qsp.query_plan AS XML)
-        , qsrs.count_executions, qsrs.avg_duration, qsrs.stdev_duration
-        , qsws.wait_category_desc, qsws.avg_query_wait_time_ms, qsws.stdev_query_wait_time_ms
-    FROM sys.query_store_plan AS qsp
-        JOIN sys.query_store_runtime_stats AS qsrs
-            ON qsrs.plan_id = qsp.plan_id
-        JOIN sys.query_store_runtime_stats_interval AS qsrsi 
-            ON qsrsi.runtime_stats_interval_id = qsrs.runtime_stats_interval_id 
-        LEFT JOIN sys.query_store_wait_stats AS qsws 
-            ON qsws.plan_id = qsrs.plan_id 
-                AND qsws.plan_id = qsrs.plan_id 
-                AND qsws.execution_type = qsrs.execution_type 
-                AND qsws.runtime_stats_interval_id = qsrs.runtime_stats_interval_id 
-    WHERE qsp.plan_id = 329 AND @CompareTime 
-        BETWEEN qsrsi.start_time AND     qsrsi.end_time;
+
+    SELECT
+        CAST(P.query_plan AS XML)
+        , RS.count_executions, RS.avg_duration, RS.stdev_duration
+        , WS.wait_category_desc, WS.avg_query_wait_time_ms, WS.stdev_query_wait_time_ms
+    FROM sys.query_store_plan AS P
+        JOIN sys.query_store_runtime_stats AS RS
+            ON RS.plan_id = P.plan_id
+        JOIN sys.query_store_runtime_stats_interval AS RSI
+            ON RSI.runtime_stats_interval_id = RS.runtime_stats_interval_id 
+        LEFT JOIN sys.query_store_wait_stats AS WS
+            ON WS.plan_id = RS.plan_id 
+                AND WS.plan_id = RS.plan_id 
+                AND WS.execution_type = RS.execution_type 
+                AND WS.runtime_stats_interval_id = RS.runtime_stats_interval_id 
+    WHERE P.plan_id = 329 AND @CompareTime 
+        BETWEEN RSI.start_time AND RSI.end_time;
     ```
     리스트 6-6 쿼리저장소에서 런타임 정보 조회       
     
