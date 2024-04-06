@@ -182,7 +182,8 @@ comments: true
             , AVG(WS.stdev_query_wait_time_ms) AS StDevQueryWaitTime
         FROM sys.query_store_runtime_stats AS RS
             LEFT JOIN sys.query_store_wait_stats AS WS
-                ON WS.plan_id = RS.plan_id AND WS.runtime_stats_interval_id = RS.runtime_stats_interval_id 
+                ON WS.plan_id = RS.plan_id 
+                    AND WS.runtime_stats_interval_id = RS.runtime_stats_interval_id 
         GROUP BY RS.plan_id, WS.wait_category_desc
     )
     SELECT CAST(P.query_plan AS XML) AS XmlPlan, A.*
