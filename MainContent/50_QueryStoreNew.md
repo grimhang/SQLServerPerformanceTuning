@@ -171,25 +171,25 @@ comments: true
     리스트 6-7을 사용하여 주어진 쿼리의 모든 수치데이터를 결합할수 있다.
     
     ```sql
-    WITH QSAggregate AS
+    WITH Agg AS
     (
-        SELECT qsrs.plan_id
-            , SUM(qsrs.count_executions) AS CountExecutions
-            , AVG(qsrs.avg_duration) AS AvgDuration
-            , AVG(qsrs.stdev_duration) AS StDevDuration
-            , qsws.wait_category_desc
-            , AVG(qsws.avg_query_wait_time_ms) AS AvgQueryWaitTime
-            , AVG(qsws.stdev_query_wait_time_ms) AS StDevQueryWaitTime
-        FROM sys.query_store_runtime_stats AS qsrs 
-            LEFT JOIN sys.query_store_wait_stats AS qsws 
-                ON qsws.plan_id = qsrs.plan_id 
-                    AND qsws.runtime_stats_interval_id = qsrs.runtime_stats_interval_id 
-        GROUP BY qsrs.plan_id, qsws.wait_category_desc
+        SELECT RS.plan_id
+            , SUM(RS.count_executions) AS ExecCnt
+            , AVG(RS.avg_duration) AS AvgDuration
+            , AVG(RS.stdev_duration) AS StDevDuration
+            , WS.wait_category_desc
+            , AVG(WS.avg_query_wait_time_ms) AS AvgQueryWaitTime
+            , AVG(WS.stdev_query_wait_time_ms) AS StDevQueryWaitTime
+        FROM sys.query_store_runtime_stats AS RS
+            LEFT JOIN sys.query_store_wait_stats AS WS
+                ON WS.plan_id = RS.plan_id AND WS.runtime_stats_interval_id = RS.runtime_stats_interval_id 
+        GROUP BY RS.plan_id, WS.wait_category_desc
     )
-    SELECT CAST(qsp.query_plan AS XML), qsa.*
-    FROM sys.query_store_plan AS qsp 
-        JOIN QSAggregate AS qsa ON qsa.plan_id = qsp.plan_id 
-    WHERE qsp.plan_id = 329;
+    SELECT CAST(P.query_plan AS XML) AS XmlPlan, A.*
+    FROM sys.query_store_plan AS P
+        JOIN Agg AS A
+            ON A.plan_id = P.plan_id
+    WHERE P.plan_id = 329;
     ```
     리스트 6-7 단일 쿼리플랜의 모든 쿼리저장소 런타임 수치데이터의 평균 가져오기
     
